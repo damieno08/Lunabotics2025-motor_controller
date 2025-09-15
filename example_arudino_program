@@ -1,0 +1,36 @@
+/**
+Blink Example for the Arduino Nano R4 Board
+Name: nano_r4_blink.ino
+Purpose: This sketch demonstrates how to blink the built-in
+user LED of the Arduino Nano R4 board.
+
+@author Arduino Product Experience Team
+@version 1.0 01/06/25
+*/
+
+// Built-in LED pin
+#define LED_PIN LED_BUILTIN
+
+void setup() {
+  // Initialize serial communication and wait up to 2.5 seconds for a connection
+  Serial.begin(115200);
+  for (auto startNow = millis() + 2500; !Serial && millis() < startNow; delay(500));
+  
+  // Configure LED pin as output
+  pinMode(LED_PIN, OUTPUT);
+  
+  // Startup message
+  Serial.println("- Arduino Nano R4 - Blink Example started...");
+}
+
+void loop() {
+  // Turn on the LED, wait 1 second
+  digitalWrite(LED_PIN, HIGH);
+  Serial.println("- LED on!");
+  delay(1000);
+  
+  // Turn off the LED, wait 1 second
+  digitalWrite(LED_PIN, LOW);
+  Serial.println("- LED off!");
+  delay(1000);  
+}
