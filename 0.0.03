@@ -1,0 +1,96 @@
+const int e4tPinA = 2; // Encoder pins, starting with 2 and 3 for simplicity
+const int e4tPinB = 3; // Can change in future when combining projects
+const int ejectoseato = 4; // Reset button for testing
+
+volatile long netCount = 0; // Displacement count variable
+volatile unsigned long totalCount = 0; // Total count variable
+unsigned long lastTime = 0; // Time elapsed prior to new interval variable
+long lastCount = 0; // Count prior to new interval variable
+
+#define WheelDiameter 0.3302 // 13 in wheel diameter
+#define e4tCPR 360 // e4t cpr
+#define Multiplier 4 // Program is currently intended to trigger 4 times per cycle
+#define GearRatio 1.0 // Need I explain this?
+
+// Red 5v; Black GND; White D2 (ChA); Green D3 (ChB)
+// Pin A detects change
+// Pin B detects in which direction
+
+float actualCPR = e4tCPR * Multiplier * GearRatio; // Calculates our codes usable CPR
+float distancePerCount = (PI * WheelDiameter) / actualCPR; // Calculates distance each time our coade triggers a count
+
+void setup() {
+  Serial.begin(9600);
+ 
+  pinMode(ejectoseato, INPUT_PULLUP); // Sets reset pin resistor to high
+  pinMode(e4tPinA, INPUT_PULLUP); // Sets PinA resistor to high
+  pinMode(e4tPinB, INPUT_PULLUP); // Sets PinB resistor to high
+
+  attachInterrupt(digitalPinToInterrupt(e4tPinA), updateCount, CHANGE); // Watch PinA when it pulses pause and updateEncoderCount
+ 
+  lastTime = millis();
+  Serial.println("Tracker Initialized"); // Ready to test
+}
+
+void loop() {
+  if (digitalRead(ejectoseato) == LOW) {
+    noInterrupts(); // Pauses encoder
+    netCount = 0; // If button is pressed, encoder reads low and resets
+    totalCount = 0;
+    interrupts(); // Unpauses encoder
+    Serial.println("Ejecto Seato Cuz!");
+    delay(300); // Prevents spam reset
+  }
+
+ unsigned long currentTime = millis();
+
+  if (currentTime - lastTime >= 100) { // Print 10 times per second
+   noInterrupts(); // Pauses encoder
+   long currentCount = netCount; // Copies to local count
+   unsigned long total = totalCount;
+   interrupts(); // Unpauses encoder
+
+   long changeInCount = currentCount - lastCount; // Calculates counts elapsed since previous print
+   float changeInTime = (currentTime - lastTime) / 1000.0; // Calculates time elapsed since previous print and converts milliseconds to seconds
+   lastCount = currentCount; // Saves count
+   lastTime = currentTime; // Saves time
+
+   float netDistance = currentCount * distancePerCount; // Calculates distance displacement
+   float totalDistance = total * distancePerCount; // Calculates total distance traveled
+   float intervalDistance = changeInCount * distancePerCount; // Calculates distance traveled during the interval
+   float speed = intervalDistance / changeInTime; // Calculates speed
+   float rpm = (changeInCount / actualCPR) / changeInTime * 60.0; // Calculates rpm
+
+   Serial.println("____________________________"); // Display calculation results
+   Serial.print("Total Encoder Count: ");
+   Serial.println(totalCount);
+
+   Serial.print("Net Encoder Count: ");
+   Serial.println(netCount);
+
+   Serial.print("Distance Traveled: ");
+   Serial.println(totalDistance, 4);
+
+   Serial.print("Net Distance: ");
+   Serial.println(netDistance, 4);
+
+   Serial.print("Speed (m/s): ");
+   Serial.println(speed, 4);
+
+   Serial.print("Speed (RPM): ");
+   Serial.println(rpm, 2);
+  }
+}
+
+void updateCount() {
+  bool a = digitalRead(e4tPinA);
+  bool b = digitalRead(e4tPinB); // Store values in Pins
+
+  if (a == b) {
+    netCount++; // If values are alike increase net count one tick (foward)
+    totalCount++; //If values are alike increase total count one tick
+  } else {
+      netCount--; // If values are different decrease net count one tick (Backward)
+      totalCount++; // If values are different increase total count one tick
+    }
+}
