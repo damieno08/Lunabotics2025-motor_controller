@@ -46,6 +46,8 @@ float checkCurrent(){
 
   // decide if current is within range and print a statement accordingly
   //
+  
+  /*
   if (current < CURRENT_MIN){
 
     Serial.printf("Current value[A]: %5.2f\n", current);
@@ -63,6 +65,7 @@ float checkCurrent(){
     Serial.println("Current is within operational range.");
 
   }
+  */
   return current;
 }
 
@@ -72,7 +75,7 @@ void loop() {
 
   // call our check current function
   //
-  checkCurrent();
+  float current = checkCurrent();
 
   // give a 500ms delay
   //
