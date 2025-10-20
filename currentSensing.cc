@@ -38,7 +38,7 @@ void setup() {
 
 // function will check if current value is between minimum and maximum
 //
-void checkCurrent(){
+float checkCurrent(){
   
   // get numerical value of current
   //
@@ -63,6 +63,7 @@ void checkCurrent(){
     Serial.println("Current is within operational range.");
 
   }
+  return current;
 }
 
 // main program
