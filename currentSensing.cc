@@ -21,6 +21,13 @@
   // we use value/1023 because the voltage value of the arduino is 10 bits, meaning max value is 1023
   // and minimum value is 0
   const float bitRange = 1023.0;
+// set up volts per amp
+//
+const float SENSOR_SENSITIVITY = 0.185;   // [V/A]
+
+// set up minimum voltage
+//
+const float ZERO_CURRENT_VOLTAGE = 2.5;   // [V]
 
 // initialize system
 //
@@ -42,30 +49,32 @@ float checkCurrent(){
   
   // get numerical value of current
   //
-  float current = (analogRead(CURRENT_PIN)/bitRange) * inputVoltage;
+  float sensorVoltage = (analogRead(CURRENT_PIN)/bitRange) * inputVoltage;
+  float current = (sensorVoltage - ZERO_CURRENT_VOLTAGE) / SENSOR_SENSITIVITY;
 
   // decide if current is within range and print a statement accordingly
   //
   
-  /*
   if (current < CURRENT_MIN){
 
-    Serial.printf("Current value[A]: %5.2f\n", current);
+    Serial.print("Current value[A]: ");
+    Serial.println(current,3);
     Serial.println("ERROR: Below minimum current");
 
   } else if(current > CURRENT_MAX){
-
-    Serial.printf("Current value[A]: %5.2f\n", current);
+    Serial.print("Current value[A]: ");
+    Serial.println(current,3);
     Serial.println("ERROR: Above maximum current");
 
   }
   else{
 
-    Serial.printf("Current value[A]: %5.2f\n", current);
+    Serial.print("Current value[A]: ");
+    Serial.println(current,3);
     Serial.println("Current is within operational range.");
 
   }
-  */
+  
   return current;
 }
 
