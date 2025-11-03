@@ -33,8 +33,8 @@ const float scale = 100.0;
 float readTemperature() {
   int analogValue = analogRead(temp_sensor);
   float volt = (analogValue * inputVoltage) / bitRange;
-  float currentTemp = (volt - offsetVoltage) * scale;
-  return currentTemp;
+  float cTemp = (volt - offsetVoltage) * scale;
+  return cTemp;
 }
 
 void updateEncoderCount() {
@@ -61,33 +61,29 @@ void setup() {
 // Recurring loop that checks conditions for safe/unsafe temps
 void loop() {
   currentTemp = readTemperature();
-
+// Overheat Check
   if (currentTemp >= overheatTemp) {
     if (!isOverheated) {
       Serial.println("OVERHEAT");
       isOverheated = true;
     }
-    // analogWrite(lpwn_pin, 0); digitalWrite(rEnable_pin, LOW); 
-    
-  } else if (isOverheated) {
-    // Checks for safe temp level
-    Serial.println("OK");
-    isOverheated = false;
-    // digitalWrite(rEnable_pin, HIGH);
+// OK Temp Check
+  } else {
+    if (isOverheated) {
+      Serial.println("OK");
+      isOverheated = false;
+    }
   }
-  
-  // noInterrupts(); long count = encoderCount; interrupts();
 
-  // Temp status
+  // Current status w/ delay
+  Serial.print("Temp: ");
   Serial.print(currentTemp);
-  
-  // Delayed by .5s - overheat status
+  Serial.print(" °C | Status: ");
   if (isOverheated) {
-    Serial.println("SHUTDOWN");
+    Serial.println("OVERHEAT");
   } else {
     Serial.println("OK");
   }
-  
-  delay(500); 
 
+  delay(500);
 }
