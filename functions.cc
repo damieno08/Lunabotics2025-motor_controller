@@ -1,0 +1,167 @@
+#include <Servo.h>
+
+/* ============================================================
+   SECTION 1 — CURRENT SENSOR
+   ============================================================ */
+const int CURRENT_PIN = A0;
+const float CURRENT_MIN = 1.0;
+const float CURRENT_MAX = 30.0;
+const float inputVoltage = 5.0;
+const float bitRange = 1023.0;
+const float SENSOR_SENSITIVITY = 0.185;
+const float ZERO_CURRENT_VOLTAGE = 2.5;
+
+float checkCurrent() {
+  float sensorVoltage = (analogRead(CURRENT_PIN) / bitRange) * inputVoltage;
+  float current = (sensorVoltage - ZERO_CURRENT_VOLTAGE) / SENSOR_SENSITIVITY;
+
+  Serial.print("Current value [A]: ");
+  Serial.println(current, 3);
+
+  if (current < CURRENT_MIN) {
+    Serial.println("ERROR: Below minimum current");
+  } else if (current > CURRENT_MAX) {
+    Serial.println("ERROR: Above maximum current");
+  } else {
+    Serial.println("Current is within operational range.");
+  }
+
+  return current;
+}
+
+/* ============================================================
+   SECTION 2 — ENCODER READER
+   ============================================================ */
+const int e4tPinA = 2;
+const int e4tPinB = 3;
+const int ejectoseato = 4;
+volatile long encoderCount = 0;
+
+void updateEncoderCount() {
+  bool a = digitalRead(e4tPinA);
+  bool b = digitalRead(e4tPinB);
+  if (a == b) encoderCount++;
+  else encoderCount--;
+}
+
+void handleEncoder() {
+  if (digitalRead(ejectoseato) == LOW) {
+    noInterrupts();
+    encoderCount = 0;
+    interrupts();
+    Serial.println("Ejecto Seato Cuz!");
+    delay(300);
+  }
+
+  noInterrupts();
+  long count = encoderCount;
+  interrupts();
+
+  Serial.print("Encoder Count: ");
+  Serial.println(count);
+}
+
+/* ============================================================
+   SECTION 3 — HALL EFFECT SENSOR
+   ============================================================ */
+const int hallEffectPin = 5;   // changed from pin 1 (invalid for analogRead)
+const int hallMinOn = 200;
+bool hallMet = false;
+
+void readHallEffect() {
+  int v = analogRead(hallEffectPin);
+  hallMet = (v < hallMinOn);
+
+  Serial.print("Hall Effect: ");
+  Serial.println(hallMet ? "TRIGGERED" : "NOT TRIGGERED");
+}
+
+/* ============================================================
+   SECTION 4 — PHOTODIODE SENSOR
+   ============================================================ */
+const int photoPin = 6;   // changed from pin 1
+const int minThreshold = 100;
+bool blocked = false;
+
+void readPhotodiode() {
+  int v = analogRead(photoPin);
+  blocked = (v < minThreshold);
+
+  Serial.print("Photodiode Blocked: ");
+  Serial.println(blocked ? "YES" : "NO");
+}
+
+/* ============================================================
+   SECTION 5 — SERVO MOTOR
+   ============================================================ */
+Servo myServo;
+
+void runServoTest() {
+  myServo.write(180);  
+  delay(3000);
+
+  myServo.write(90);
+  delay(1000);
+
+  myServo.write(0);
+  delay(3000);
+
+  myServo.write(90);
+  delay(2000);
+}
+
+/* ============================================================
+   SECTION 6 — TEMPERATURE SENSOR
+   ============================================================ */
+const int temp_sensor = A1;
+const float overheatTemp = 50.0;
+float currentTemp = 0.0;
+bool isOverheated = false;
+
+float readTemperature() {
+  float volt = (analogRead(temp_sensor) * inputVoltage) / bitRange;
+  return (volt - 0.5) * 100.0;
+}
+
+void reportTemp() {
+  currentTemp = readTemperature();
+
+  Serial.print("Temp: ");
+  Serial.print(currentTemp);
+  Serial.print(" °C | Status: ");
+
+  if (currentTemp >= overheatTemp) {
+    if (!isOverheated) Serial.println("OVERHEAT");
+    isOverheated = true;
+  } else {
+    if (isOverheated) Serial.println("OK");
+    isOverheated = false;
+  }
+
+  Serial.println(isOverheated ? "OVERHEAT" : "OK");
+}
+
+/* ============================================================
+   FINAL SETUP
+   ============================================================ */
+void setup() {
+  Serial.begin(9600);
+
+  // Current sensor
+  pinMode(CURRENT_PIN, INPUT);
+
+  // Encoder
+  pinMode(ejectoseato, INPUT_PULLUP);
+  pinMode(e4tPinA, INPUT_PULLUP);
+  pinMode(e4tPinB, INPUT_PULLUP);
+  attachInterrupt(digitalPinToInterrupt(e4tPinA), updateEncoderCount, CHANGE);
+
+  // Hall and Photodiode
+  pinMode(hallEffectPin, INPUT);
+  pinMode(photoPin, INPUT);
+
+  // Servo
+  myServo.attach(9);
+
+  Serial.println("System Initialized.");
+}
