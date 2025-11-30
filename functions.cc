@@ -64,7 +64,7 @@ void handleEncoder() {
 /* ============================================================
    SECTION 3 — HALL EFFECT SENSOR
    ============================================================ */
-const int hallEffectPin = 5;   // changed from pin 1 (invalid for analogRead)
+const int hallEffectPin = 5;   
 const int hallMinOn = 200;
 bool hallMet = false;
 
