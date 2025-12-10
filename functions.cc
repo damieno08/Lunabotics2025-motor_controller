@@ -9,10 +9,7 @@ const float CURRENT_MAX = 30.0;
 const float inputVoltage = 5.0;
 const float bitRange = 1023.0;
 const float ZERO_CURRENT_VOLTAGE = 2.58;
-
-// volts / A must be somewhere between 66 and 185 according to datasheet
-//
-const float SENSOR_SENSITIVITY = inputVoltage/105;
+const int SENSOR_SENSITIVITY = inputVoltage/105; // volts / A must be somewhere between 66 and 185 according to datasheet
 
 // Note that sensor may need more adjusting at lower currents but works for high current
 //
@@ -124,10 +121,12 @@ const int temp_sensor = A2;
 const float overheatTemp = 50.0;
 float currentTemp = 0.0;
 bool isOverheated = false;
+const float TEMP_ZERO_VOLTS = 0.55;
+const int TEMP_SENSITIVITY = 100; // volts per degree C according to datasheet
 
 float readTemperature() {
   float volt = (analogRead(temp_sensor) * inputVoltage) / bitRange;
-  return (volt - 0.5) * 100.0;
+  return (volt - TEMP_ZERO_VOLTS) * TEMP_SENSITIVITY;
 }
 
 void reportTemp() {
