@@ -64,4 +64,24 @@ extern bool isOverheated;
 float readTemperature();
 void reportTemp();
 
+/* ============================================================
+   SECTION 7 — H-BRIDGE MOTOR CONTROL
+   ============================================================ */
+
+// H-bridge control pins (defined in .cpp)
+extern const int motorIn1;
+extern const int motorIn2;
+extern const int motorPWM;
+
+// Motor direction options
+enum MotorDirection {
+  FORWARD,
+  REVERSE,
+  BRAKE
+};
+
+// Function prototypes
+void initMotor();
+void runMotor(MotorDirection dir, int speedValue);
+
 #endif
