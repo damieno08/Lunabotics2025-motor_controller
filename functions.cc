@@ -3,18 +3,25 @@
 /* ============================================================
    SECTION 1 — CURRENT SENSOR
    ============================================================ */
-const int CURRENT_PIN = A0;
+const int CURRENT_PIN = A1;
 const float CURRENT_MIN = 1.0;
 const float CURRENT_MAX = 30.0;
 const float inputVoltage = 5.0;
 const float bitRange = 1023.0;
-const float SENSOR_SENSITIVITY = 0.185;
-const float ZERO_CURRENT_VOLTAGE = 2.5;
+const float ZERO_CURRENT_VOLTAGE = 2.58;
 
+// volts / A must be somewhere between 66 and 185 according to datasheet
+//
+const float SENSOR_SENSITIVITY = inputVoltage/105;
+
+// Note that sensor may need more adjusting at lower currents but works for high current
+//
 float checkCurrent() {
   float sensorVoltage = (analogRead(CURRENT_PIN) / bitRange) * inputVoltage;
-  float current = (sensorVoltage - ZERO_CURRENT_VOLTAGE) / SENSOR_SENSITIVITY;
+  float current = (ZERO_CURRENT_VOLTAGE - sensorVoltage) / SENSOR_SENSITIVITY;
 
+  Serial.print("Voltage value [V]: ");
+  Serial.println(sensorVoltage, 3);
   Serial.print("Current value [A]: ");
   Serial.println(current, 3);
 
@@ -113,7 +120,7 @@ void runServoTest() {
 /* ============================================================
    SECTION 6 — TEMPERATURE SENSOR
    ============================================================ */
-const int temp_sensor = A1;
+const int temp_sensor = A2;
 const float overheatTemp = 50.0;
 float currentTemp = 0.0;
 bool isOverheated = false;
