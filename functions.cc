@@ -147,4 +147,57 @@ void reportTemp() {
   Serial.println(isOverheated ? "OVERHEAT" : "OK");
 }
 
+/* ============================================================
+   SECTION 7 — H-bridge
+   ============================================================ */
+
+// ====== H-BRIDGE PINS ======
+const int motorIn1 = 10;   // IN1
+const int motorIn2 = 11;   // IN2
+const int motorPWM = 9;    // ENA / PWM pin
+
+// Motor directions
+enum MotorDirection {
+  FORWARD,
+  REVERSE,
+  BRAKE
+};
+
+// ====== Initialize Motor Pins ======
+void initMotor() {
+  pinMode(motorIn1, OUTPUT);
+  pinMode(motorIn2, OUTPUT);
+  pinMode(motorPWM, OUTPUT);
+
+  digitalWrite(motorIn1, LOW);
+  digitalWrite(motorIn2, LOW);
+  analogWrite(motorPWM, 0);
+}
+
+// ====== Run Motor ======
+void runMotor(MotorDirection dir, int speedValue) {
+  speedValue = constrain(speedValue, 0, 255);  
+
+  switch (dir) {
+
+    case FORWARD:
+      digitalWrite(motorIn1, HIGH);
+      digitalWrite(motorIn2, LOW);
+      analogWrite(motorPWM, speedValue);
+      break;
+
+    case REVERSE:
+      digitalWrite(motorIn1, LOW);
+      digitalWrite(motorIn2, HIGH);
+      analogWrite(motorPWM, speedValue);
+      break;
+
+    case BRAKE:
+      digitalWrite(motorIn1, LOW);
+      digitalWrite(motorIn2, LOW);
+      analogWrite(motorPWM, 0);
+      break;
+  }
+}
+
 
